@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.*; // ✅ Importa todas las anota
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.saori.citas_medicas.services.CitaService;
-import com.saori.citas_medicas.models.Cita;
+
 import com.saori.citas_medicas.dto.CitaRequest;
 import com.saori.citas_medicas.dto.CitaResponseDTO;
 

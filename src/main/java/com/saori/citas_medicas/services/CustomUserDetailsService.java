@@ -24,8 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return User.builder()
                 .username(usuario.getEmail())
-                .password(usuario.getPassword())  // ✅ Spring Security validará la contraseña automáticamente
-                .roles(usuario.getRol().name())  // ✅ Usa los roles definidos en tu enum Rol
+                .password(usuario.getPassword())  // Spring Security validará la contraseña automáticamente
+                .roles(usuario.getRol().name())  //  Usa los roles definidos en tu enum Rol
                 .build();
     }
 }

@@ -27,11 +27,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable()) // 🔴 Deshabilitar CSRF (Solo en desarrollo)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 🔹 API sin estado
+                .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF (Solo en desarrollo)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // API sin estado
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/register", "/auth/login").permitAll() // ✅ Permitir acceso a rutas de autenticación
-                        .anyRequest().authenticated() // 🔒 Todas las demás requieren autenticación
+                        .requestMatchers("/auth/register", "/auth/login").permitAll() // permitir acceso a rutas de autenticación
+                        .anyRequest().authenticated() // Todas las demás requieren autenticación
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // ✅ Agregar filtro JWT
                 .build();
@@ -39,7 +39,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // 🔐 Se mantiene el mismo cifrado en toda la app
+        return new BCryptPasswordEncoder(); // Se mantiene el mismo cifrado en toda la app
     }
 
     @Bean

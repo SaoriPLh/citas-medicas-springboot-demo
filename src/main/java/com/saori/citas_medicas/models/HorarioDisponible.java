@@ -6,6 +6,9 @@
 package com.saori.citas_medicas.models;
 
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -17,8 +20,8 @@ public class HorarioDisponible {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String fecha;
-    private String hora;
+    private LocalDate fecha;
+    private LocalTime hora;
 
 
 

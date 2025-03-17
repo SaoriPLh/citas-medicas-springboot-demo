@@ -27,11 +27,11 @@ public class AuthService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    // 📌 Método requerido por UserDetailsService para Spring Security
+    // Método requerido por UserDetailsService para Spring Security
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("❌ Usuario con email '" + email + "' no encontrado."));
+                .orElseThrow(() -> new UsernameNotFoundException(" Usuario con email '" + email + "' no encontrado."));
         
         return new User(usuario.getEmail(), usuario.getPassword(), Collections.emptyList());
     }
@@ -39,7 +39,7 @@ public class AuthService implements UserDetailsService {
     // 📌 REGISTRO DE USUARIO
     public Usuario registrarUsuario(RegistroRequest request) {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("❌ El email '" + request.getEmail() + "' ya está registrado.");
+            throw new RuntimeException(" El email '" + request.getEmail() + "' ya está registrado.");
         }
 
         // 🔹 Hasheamos la contraseña con BCrypt
@@ -67,7 +67,7 @@ public class AuthService implements UserDetailsService {
             paciente.setTelefono(request.getTelefono());
             usuario = paciente;
         } else {
-            throw new RuntimeException("❌ Rol inválido. Debe ser 'DOCTOR' o 'PACIENTE'.");
+            throw new RuntimeException(" Rol inválido. Debe ser 'DOCTOR' o 'PACIENTE'.");
         }
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
@@ -81,20 +81,20 @@ public class AuthService implements UserDetailsService {
     // 📌 LOGIN DE USUARIO
     public String authenticate(String email, String password) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("❌ Usuario con email '" + email + "' no encontrado."));
+                .orElseThrow(() -> new UsernameNotFoundException(" Usuario con email '" + email + "' no encontrado."));
         
-        logger.info("🔹 Contraseña ingresada por el usuario: {}", password);
-        logger.info("🔹 Contraseña almacenada en BD: {}", usuario.getPassword());
+        logger.info(" Contraseña ingresada por el usuario: {}", password);
+        logger.info(" Contraseña almacenada en BD: {}", usuario.getPassword());
         
         boolean passwordMatches = passwordEncoder.matches(password, usuario.getPassword());
-        logger.info("🔹 ¿Las contraseñas coinciden?: {}", passwordMatches);
+        logger.info(" ¿Las contraseñas coinciden?: {}", passwordMatches);
 
         if (!passwordMatches) {
-            throw new BadCredentialsException("❌ Contraseña incorrecta.");
+            throw new BadCredentialsException(" Contraseña incorrecta.");
         }
 
         String token = jwtUtil.generateToken(usuario);
-        logger.info("✅ Token generado correctamente para usuario: {}", email);
+        logger.info(" Token generado correctamente para usuario: {}", email);
         return token;
     }
 }

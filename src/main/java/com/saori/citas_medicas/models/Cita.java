@@ -1,5 +1,8 @@
 package com.saori.citas_medicas.models;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import com.saori.citas_medicas.enums.EstadoCita;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,8 +23,8 @@ public class Cita {
     @JoinColumn(name = "paciente_id")
     private Paciente paciente;
 
-    private String fecha;
-    private String hora;
+    private LocalDate fecha;
+    private LocalTime hora;
 
     @Enumerated(EnumType.STRING)
     private EstadoCita estado;
