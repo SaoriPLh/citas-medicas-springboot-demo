@@ -18,6 +18,10 @@ public class CitaController {
         this.citaService = citaService;
     }
 
+    //responseentyty nos ayuda a estructurar y personalizar respuestas 
+    //Ejemplos: ResponseEntiry.status(HttpStatus.UNAUTHORIZED)
+    //Cuando extraemos por ejemplo el token de un usuario desde los headers de la petición y lo validamos entonces responseEntity nos ayuda a dar la estructura de la respuesta
+   
     @PostMapping("/reservar")
     public ResponseEntity<CitaResponseDTO> reservarCita(@RequestBody CitaRequest request) {
          CitaResponseDTO responseDTO = citaService.reservarCita(request);
