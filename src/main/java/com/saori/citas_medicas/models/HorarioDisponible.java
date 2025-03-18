@@ -29,7 +29,7 @@ public class HorarioDisponible {
     @JoinColumn(name = "doctor_id")
     private Doctor doctor;
     
-    private boolean ocupado;  // 🟢 Agregar este atributo
+    private boolean ocupado;  //  Agregar este atributo
 
     // ✅ Métodos getter y setter
     public boolean isOcupado() {

@@ -1,6 +1,8 @@
 package com.saori.citas_medicas.controllers;
 
 import org.springframework.web.bind.annotation.*; // ✅ Importa todas las anotaciones de Spring Web
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.saori.citas_medicas.services.CitaService;
@@ -24,7 +26,13 @@ public class CitaController {
    
     @PostMapping("/reservar")
     public ResponseEntity<CitaResponseDTO> reservarCita(@RequestBody CitaRequest request) {
-         CitaResponseDTO responseDTO = citaService.reservarCita(request);
-        return ResponseEntity.ok(responseDTO);
+        try{
+            CitaResponseDTO responseDTO = citaService.reservarCita(request);
+            return ResponseEntity.ok(responseDTO);
+        }
+       catch(Exception e){
+             e.printStackTrace();
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CitaResponseDTO("Error"+e));
+       }
     }
 }

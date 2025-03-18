@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter @Setter
 public class CitaResponseDTO {
-    
+    private String mensaje;
     private Long id;
     private DoctorDTO doctor;
     private PacienteDTO paciente;
@@ -25,6 +25,9 @@ public class CitaResponseDTO {
         private Long id;
         private String nombre;
         private String email;
+    }
+    public CitaResponseDTO(String mensaje) {
+        this.mensaje = mensaje;
     }
 
     @Getter @Setter

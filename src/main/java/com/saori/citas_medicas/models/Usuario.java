@@ -14,10 +14,12 @@ public abstract class Usuario {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String mensaje;
     private Long id;
     private String nombre;
     private String email;
-    private String password; // ❌ Ya no se alterará automáticamente
+    private String password; // Ya no se alterará automáticamente
+    
     
     @Enumerated(EnumType.STRING)
     private Rol rol;
