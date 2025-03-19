@@ -12,5 +12,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AuthResponse {
+    private String mensajeError;
     private String token;
+
+    public AuthResponse(String mensajeError){
+        this.mensajeError=mensajeError;
+    }
 }
