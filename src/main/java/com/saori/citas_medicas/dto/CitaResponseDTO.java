@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@Getter @Setter
+@Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class CitaResponseDTO {
     private String mensaje;
     private Long id;
@@ -18,6 +18,16 @@ public class CitaResponseDTO {
     private LocalTime hora;
     private String estado;
 
+
+    public CitaResponseDTO(String mensaje) {
+        this.mensaje = mensaje;
+    }
+
+  
+
+   
+
+    
     @Getter @Setter
     @NoArgsConstructor //  Genera constructor vacío
     @AllArgsConstructor //  Genera constructor con todos los parámetros
@@ -26,9 +36,10 @@ public class CitaResponseDTO {
         private String nombre;
         private String email;
     }
-    public CitaResponseDTO(String mensaje) {
-        this.mensaje = mensaje;
-    }
+
+
+
+
 
     @Getter @Setter
     @NoArgsConstructor
