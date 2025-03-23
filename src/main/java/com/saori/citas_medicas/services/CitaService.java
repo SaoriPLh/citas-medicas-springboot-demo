@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CitaService {
    //Inyecciones de dependencia
+
     private final CitaRepository citaRepository;
     private final CitaValidador citaValidator; 
 
@@ -27,13 +28,14 @@ public class CitaService {
     }
 
     @Transactional
+    //recibimos el formato de como debe ser una cita osea CitaRequest
     public CitaResponseDTO reservarCita(CitaRequest request) {
-        //validaciones de citaValidador
+        //validaciones de citaValidador validar que existen ...
         Doctor doctor = citaValidator.validarDoctor(request.getDoctorId());
         Paciente paciente = citaValidator.validarPaciente(request.getPacienteId());
         HorarioDisponible horario = citaValidator.validarHorarioDisponible(doctor, request.getFecha(), request.getHora());
 
-       //horairo como ocupado
+    
         horario.setOcupado(true);
 
         // Crear y guardar la cita

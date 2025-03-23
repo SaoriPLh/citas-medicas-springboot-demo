@@ -41,6 +41,7 @@ public class AuthService implements UserDetailsService {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException(" El email '" + request.getEmail() + "' ya está registrado.");
         }
+    
 
         // 🔹 Hasheamos la contraseña con BCrypt
         String rawPassword = request.getPassword();
