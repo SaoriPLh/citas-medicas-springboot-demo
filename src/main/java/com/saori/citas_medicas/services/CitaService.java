@@ -10,6 +10,10 @@ import com.saori.citas_medicas.models.Paciente;
 import com.saori.citas_medicas.repositories.CitaRepository;
 import com.saori.citas_medicas.dto.CitaResponseDTO;
 import com.saori.citas_medicas.valitator.CitaValidador;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +53,7 @@ public class CitaService {
 
         return convertirCitaADTO(cita);
     }
+     
 
     // Metodo para convertir cita en DTO
     private CitaResponseDTO convertirCitaADTO(Cita cita) {
