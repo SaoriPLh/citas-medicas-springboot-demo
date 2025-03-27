@@ -35,6 +35,7 @@ public class AuthController {
             
         String token = authService.authenticate(request.getEmail(), request.getPassword());
         return ResponseEntity.ok(new AuthResponse(token));
+        
         }catch(AuthenticationFailedException e){
             AuthResponse respuesta = new AuthResponse(e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(respuesta);
