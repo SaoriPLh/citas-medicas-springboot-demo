@@ -41,10 +41,17 @@ public class CitaValidador {
                 .orElseThrow(() -> new PacienteNotFoundException("Paciente no encontrado con ID: " + pacienteId));
     }
 
-    // ✅ Validar que el horario está disponible
+    // ✅ Validar que el horario está disponible, aca de cuardo al doctor me devuelve si esta disponinle el horario  SOLO ES PARA BUSCAR HORARIOS
     public HorarioDisponible validarHorarioDisponible(Doctor doctor, LocalDate fecha, LocalTime hora) {
         return horarioRepository.findByDoctorAndFechaAndHora(doctor, fecha, hora)
                 .filter(h -> !h.isOcupado())
                 .orElseThrow(() -> new HorarioNoDisponibleException("El doctor no está disponible en este horario"));
     }
+
+    public HorarioDisponible buscarHorario(Doctor doctor, LocalDate fecha, LocalTime hora) {
+        
+        return horarioRepository.findByDoctorAndFechaAndHora(doctor, fecha, hora)
+            .orElseThrow(() -> new RuntimeException("No se encontró el horario"));
+    }
+    
 }
