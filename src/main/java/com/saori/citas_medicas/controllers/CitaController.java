@@ -32,7 +32,7 @@ public class CitaController {
         }
        catch(Exception e){
              e.printStackTrace();
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CitaResponseDTO("Error"+e));
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CitaResponseDTO("Error: "+e));
        }
     }
 }

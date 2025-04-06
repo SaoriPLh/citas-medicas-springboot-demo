@@ -40,14 +40,14 @@ public class CitaService {
     @Transactional
     //recibimos el formato de como debe ser una cita osea CitaRequest
     public CitaResponseDTO reservarCita(CitaRequest request) {
-        //validaciones de citaValidador validar que existen ...
+        //validaciones de citaValidador validar que existen o disponibilidad 
         Doctor doctor = citaValidator.validarDoctor(request.getDoctorId());
         Paciente paciente = citaValidator.validarPaciente(request.getPacienteId());
         HorarioDisponible horario = citaValidator.validarHorarioDisponible(doctor, request.getFecha(), request.getHora());
 
     
         horario.setOcupado(true);
-
+        
         // Crear y guardar la cita
         Cita cita = new Cita();
         cita.setDoctor(doctor);
@@ -61,58 +61,47 @@ public class CitaService {
     }
 
 
+    //Hacer NUEVA CLASE DONDE DEVOLDAMOS LA LISTA DE LAS CITAS DEL DOCTOR
+
+
     public CitaResponseDTO actualizarCita(Long id,ActualizarCitaRequest actualizarCitaRequest){
-        //primer buscaremos la cita
-        //luego deberiamamos buscar el horario y cambiarlo pero al mismo tiempo validar que este disponible, claramente debemos entonces buscar tambien al doctor y paciente
-        String camnbio = actualizarCitaRequest.getCambio();
-        Long nuevoDoctorId= actualizarCitaRequest.getNuevoDoctorId();
-        LocalDate nuevaDate = actualizarCitaRequest.getNuevaFecha();
+        //recibitemos el tipo de cambio sregun el request
+        //validaremos q la cita exista
 
-        LocalTime nuevaHora = actualizarCitaRequest.getNuevaHora();
-       
-        //optional puede  o no haber algo en esa cajita que es opcional (cita)
+        
 
-        Optional<Cita> citaBuscada = citaRepository.findById(id);  
-        //verificamos que si exista algo dentro
-        if (citaBuscada.isPresent()){
+        
+        Optional<Cita> citaBuscada = citaRepository.findById(id);
 
-            //seria cita encontrada 
-            Cita citaEncontrada = citaBuscada.get(); // y lo obtenemos
-            switch (camnbio.toUpperCase()) {
+        if(citaBuscada.isPresent()){
+            Cita cita = citaBuscada.get();
+
+            //nulo porque tendremos varias opciones a implementar
+            //no lo pasamos como parametro ya q necesitamos el actualizarcitaRequest
+            CambioCItaStrategy estrategia = null;
+            switch (actualizarCitaRequest.getCambio().toUpperCase()) {
                 case "DOCTOR":
-                //validar que no sea nulo?
-                    Doctor doctor = citaValidator.validarDoctor(nuevoDoctorId);
-                    citaEncontrada.setDoctor(doctor);
-                    
+                    // Si el cambio es de doctor, usamos la estrategia de CambioDoctorStrategy
+                    estrategia = new CambioDoctorStrategy(citaValidator);
                     break;
                 case "HORARIO":
-
-                
-                //Verificar que el horario este disponible
-                HorarioDisponible horario = citaValidator.validarHorarioDisponible(citaEncontrada.getDoctor(),  nuevaDate, nuevaHora);
-               
-                //aca seria  otro metodo ya que esto me devuelve si el horario esta disponible osea me devuelve el horario si esta disponible
-                //pero como obviamente si esta disponible fallarà
-
-                HorarioDisponible horarioAntiguo = citaValidator.buscarHorario(citaEncontrada.getDoctor(), citaEncontrada.getFecha(), citaEncontrada.getHora());
-                horarioAntiguo.setOcupado(false);
-                
-
-                horario.setOcupado(true);
-                citaEncontrada.setFecha(nuevaDate);
-                citaEncontrada.setHora(nuevaHora);
-                
-                
-            
-                default:
+                    // Si el cambio es de horario, usamos la estrategia de CambioHorarioStrategy
+                    estrategia = new CambioHorarioStrategy(citaValidator);
                     break;
+                default:
+                    throw new IllegalArgumentException("Cambio no soportado");
             }
 
-            return convertirCitaADTO(citaEncontrada);
+        // Ejecutamos el cambio utilizando la estrategia seleccionada
+        estrategia.ejecutarCambio(cita, actualizarCitaRequest);
 
-        }
+        // Devolvemos la cita actualizada en el formato adecuado
+        return convertirCitaADTO(cita);
+    } else {
+        // Si no encontramos la cita, devolvemos null (o puedes manejarlo de otra forma)
         return null;
     }
+}
 
     //eliminar una cita, devolveremos un boolean? 
 
@@ -142,23 +131,21 @@ public class CitaService {
         return false;
         }
 
+
+        
+
     
         public Boolean marcarCitaComoAtendida(long id) {
+
             Optional<Cita> citaEncontrada = citaRepository.findById(id);
         
             if (citaEncontrada.isPresent()) {
                 Cita cita = citaEncontrada.get();
         
-                // Validar que la cita esté en estado PENDIENTE
-                if (cita.getEstado() == EstadoCita.PENDIENTE) {
-                    cita.setEstado(EstadoCita.CONFIRMADA); // Cambiar el estado
-        
-                    citaRepository.save(cita); // Guardar la actualización
-                    return true;
-                }
-        
-                // Si la cita no está pendiente, no la podemos marcar como atendida
-                return false;
+                EstadoCitaStrategy estrategia = new ConfirmarCitaStrategy();
+                estrategia.cambiarEstado(cita);
+                
+                return true;
             }
         
             // Si la cita no existe

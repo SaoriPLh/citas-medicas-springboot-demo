@@ -6,6 +6,8 @@ import com.saori.citas_medicas.models.Doctor;
 import com.saori.citas_medicas.models.Paciente;
 import com.saori.citas_medicas.models.Usuario;
 import com.saori.citas_medicas.repositories.UsuarioRepository;
+import com.saori.citas_medicas.valitator.CitaValidador;
+
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +39,7 @@ public class AuthService implements UserDetailsService {
         return new User(usuario.getEmail(), usuario.getPassword(), Collections.emptyList());
     }
 
-    // 📌 REGISTRO DE USUARIO
+    //  REGISTRO DE USUARIO
     public Usuario registrarUsuario(RegistroRequest request) {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException(" El email '" + request.getEmail() + "' ya está registrado.");
@@ -46,9 +49,7 @@ public class AuthService implements UserDetailsService {
         // 🔹 Hasheamos la contraseña con BCrypt
         String rawPassword = request.getPassword();
         String hashedPassword = passwordEncoder.encode(rawPassword);
-        
-        logger.info("🔹 Contraseña ingresada: {}", rawPassword);
-        logger.info("🔹 Contraseña hasheada antes de guardar (BCrypt): {}", hashedPassword);
+
         
         Usuario usuario;
         if ("DOCTOR".equalsIgnoreCase(request.getRol())) {
@@ -73,13 +74,11 @@ public class AuthService implements UserDetailsService {
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
         
-        logger.info("✅ Usuario guardado en BD con ID: {}", usuarioGuardado.getId());
-        logger.info("🔹 Contraseña almacenada en BD: {}", usuarioGuardado.getPassword());
-
+   
         return usuarioGuardado;
     }
 
-    // 📌 LOGIN DE USUARIO
+    // LOGIN DE USUARIO
     public String authenticate(String email, String password) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(" Usuario con email '" + email + "' no encontrado."));
@@ -98,4 +97,20 @@ public class AuthService implements UserDetailsService {
         logger.info(" Token generado correctamente para usuario: {}", email);
         return token;
     }
+  
+
+    // recibimos y validamos el email 
+    // generamos el token temporal (lo guarmos )
+
+    public void solicitarRestablecimiento(String email){
+
+        
+        Optional<Usuario> usuarioBuscado = usuarioRepository.findByEmail(email);
+        
+        if(usuarioBuscado.isPresent()){
+            Usuario usuario = usuarioBuscado.get();
+        }
+    }
+
+     
 }
