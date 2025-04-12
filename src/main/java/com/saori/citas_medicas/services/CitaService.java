@@ -50,27 +50,49 @@ public class CitaService {
         
         // Crear y guardar la cita
         Cita cita = new Cita();
-        cita.setDoctor(doctor);
         cita.setPaciente(paciente);
         cita.setFecha(request.getFecha());
         cita.setHora(request.getHora());
         cita.setEstado(EstadoCita.PENDIENTE);
         cita = citaRepository.save(cita);
 
+        //guardamos esta cita creada en el doctor
+        doctor.añadirCita(cita);
+        
+
         return convertirCitaADTO(cita);
     }
 
+//Metodo que nos devuelva la lista de citas guardadas en el doctor pero cada una nos la va a devolver en un formato de CitaResponseDTO
+@Transactional(readOnly = true)
+public List<CitaResponseDTO> obtenerCitaResponseDTOsPorDoctor(Long doctorId) {
+    //buscamos al doctor por su id
+    Doctor doctor = citaValidator.validarDoctor(doctorId);
+     
+    //obtenemos las citas del doctor
 
-    //Hacer NUEVA CLASE DONDE DEVOLDAMOS LA LISTA DE LAS CITAS DEL DOCTOR
+
+
+    //declaramos la lista a retornar
+    List<CitaResponseDTO> listasFinales = new ArrayList<>();
+
+    for (Cita cita : doctor.citasGuardadas()) {
+        listasFinales.add(convertirCitaADTO(cita));
+        
+    }
+
+    return listasFinales;
+    
+    //las transformamos en citaResponse dto cada una 
+
+}
+    
 
 
     public CitaResponseDTO actualizarCita(Long id,ActualizarCitaRequest actualizarCitaRequest){
         //recibitemos el tipo de cambio sregun el request
         //validaremos q la cita exista
 
-        
-
-        
         Optional<Cita> citaBuscada = citaRepository.findById(id);
 
         if(citaBuscada.isPresent()){
@@ -79,18 +101,18 @@ public class CitaService {
             //nulo porque tendremos varias opciones a implementar
             //no lo pasamos como parametro ya q necesitamos el actualizarcitaRequest
             CambioCItaStrategy estrategia = null;
-            switch (actualizarCitaRequest.getCambio().toUpperCase()) {
-                case "DOCTOR":
-                    // Si el cambio es de doctor, usamos la estrategia de CambioDoctorStrategy
-                    estrategia = new CambioDoctorStrategy(citaValidator);
-                    break;
-                case "HORARIO":
-                    // Si el cambio es de horario, usamos la estrategia de CambioHorarioStrategy
-                    estrategia = new CambioHorarioStrategy(citaValidator);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Cambio no soportado");
+            if("DOCTOR".equals(actualizarCitaRequest.getCambio())){
+                //si el tipo de cambio es doctor
+                estrategia = new CambioDoctorStrategy(citaValidator);}
+
+                
+            else if("HORARIO".equals(actualizarCitaRequest.getCambio())){
+                //si el tipo de cambio es horario
+                estrategia = new CambioHorarioStrategy(citaValidator);
+            }else{
+                throw new IllegalArgumentException("Tipo de cambio no soportado");
             }
+
 
         // Ejecutamos el cambio utilizando la estrategia seleccionada
         estrategia.ejecutarCambio(cita, actualizarCitaRequest);
