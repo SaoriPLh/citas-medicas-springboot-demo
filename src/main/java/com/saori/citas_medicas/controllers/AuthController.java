@@ -1,5 +1,6 @@
 package com.saori.citas_medicas.controllers;
 
+import com.saori.citas_medicas.dto.ActualizarUsuarioRequest;
 import com.saori.citas_medicas.dto.AuthResponse;
 import com.saori.citas_medicas.dto.LoginRequest;
 import com.saori.citas_medicas.dto.RegistroRequest;
@@ -41,4 +42,40 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(respuesta);
         }
     }
+
+     //vamos a llamar al auth Service de recuperar contraseña
+     //Podemos devolve run auth responde
+     //
+
+        @PostMapping("/requestPassword")
+        public ResponseEntity<String> requestPassword(@RequestParam String email) {
+            try {
+                // Llamamos al servicio para solicitar el restablecimiento de contraseña
+                String response = authService.solicitarRestablecimiento(email);
+                return ResponseEntity.ok(response);
+            } catch (RuntimeException e) {
+                // Devolvemos un mensaje de error claro
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            } 
+        }
+
+
+        //vamos a recibir un dto request 
+        @PostMapping("/resetPassword")
+        public ResponseEntity<String> resetPassword(@RequestBody ActualizarUsuarioRequest actualizarUsuarioRequest){
+
+                //manejamos excepciones
+                try{
+                    String respuesta = authService.aplicarCambioUsuario(actualizarUsuarioRequest);
+
+                    return ResponseEntity.ok(respuesta);
+                }catch (RuntimeException e){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                }
+            
+        }
+
+    
 }
+
+
