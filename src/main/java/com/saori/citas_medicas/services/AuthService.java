@@ -109,7 +109,7 @@ public class AuthService implements UserDetailsService {
     // recibimos y validamos el email 
     // generamos el token temporal (lo guarmos )
 
-    public void solicitarRestablecimiento(String email){
+    public String solicitarRestablecimiento(String email){
 
         //Usamoe directamente la exceptcion ya que no haremos nada mas si no se encuentra
         //pero si lo hicieramos entonces hariamos el isPresent O GET pero no es asi 
@@ -136,6 +136,7 @@ public class AuthService implements UserDetailsService {
             tokenReset.setUsado(false);
             passwordResetTokenRepository.save(tokenReset);
      
+           return "enlace de pagina";
         
             
 
@@ -143,7 +144,7 @@ public class AuthService implements UserDetailsService {
     }
 
 
-    public void aplicarCambioUsuario(ActualizarUsuarioRequest actualizarUsuarioRequest) {
+    public String aplicarCambioUsuario(ActualizarUsuarioRequest actualizarUsuarioRequest) {
 
         CambioUsuarioStrategy estrategia = null;
     
@@ -168,6 +169,9 @@ public class AuthService implements UserDetailsService {
             // 6. Marcamos el token como usado y lo guardamos
             tokenBuscado.setUsado(true);
             passwordResetTokenRepository.save(tokenBuscado);
+
+
+            return "Cambio de contraseña exitoso";
     
         } else {
             throw new IllegalArgumentException("Tipo de cambio no soportado: " + actualizarUsuarioRequest.getCambio());
