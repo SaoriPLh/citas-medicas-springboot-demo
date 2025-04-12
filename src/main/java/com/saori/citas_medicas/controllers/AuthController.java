@@ -47,7 +47,7 @@ public class AuthController {
      //Podemos devolve run auth responde
      //
 
-        @PostMapping("/requestPassword")
+        @PostMapping("/forgetPassword")
         public ResponseEntity<String> requestPassword(@RequestParam String email) {
             try {
                 // Llamamos al servicio para solicitar el restablecimiento de contraseña

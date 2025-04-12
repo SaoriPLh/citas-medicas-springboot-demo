@@ -2,25 +2,25 @@ package com.saori.citas_medicas.models;
 
 import com.saori.citas_medicas.enums.Rol;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Entity
-@Table(name= "usuarios")
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "usuarios")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Usuario {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String mensaje;
     private Long id;
+
     private String nombre;
     private String email;
-    private String password; // Ya no se alterará automáticamente
-    
-    
+    private String password;
+
     @Enumerated(EnumType.STRING)
     private Rol rol;
 }

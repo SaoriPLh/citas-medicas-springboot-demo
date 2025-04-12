@@ -33,7 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/register", "/auth/login").permitAll() // permitir acceso a rutas de autenticación
                         .anyRequest().authenticated() // Todas las demás requieren autenticación
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // ✅ Agregar filtro JWT
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Agregar filtro JWT
                 .build();
     }
 
