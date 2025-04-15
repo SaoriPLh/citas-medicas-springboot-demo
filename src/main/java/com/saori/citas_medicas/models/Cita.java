@@ -22,7 +22,7 @@ public class Cita {
     @ManyToOne
     @JoinColumn(name = "paciente_id")
     private Paciente paciente;
-
+   
     private LocalDate fecha;
     private LocalTime hora;
 

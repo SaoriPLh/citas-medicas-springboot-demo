@@ -55,7 +55,7 @@ public class CitaService {
     }
      
 
-    // Metodo para convertir cita en DTO
+    // metodo donde devolvemos la cita en un DTO
     private CitaResponseDTO convertirCitaADTO(Cita cita) {
         CitaResponseDTO responseDTO = new CitaResponseDTO();
         responseDTO.setId(cita.getId());
