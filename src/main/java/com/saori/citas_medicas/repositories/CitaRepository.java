@@ -14,4 +14,6 @@ import org.springframework.stereotype.Repository;
  * @author saori
  */
 @Repository
-public interface CitaRepository extends JpaRepository<Cita, Long> {}
+public interface CitaRepository extends JpaRepository<Cita, Long> {
+    
+}

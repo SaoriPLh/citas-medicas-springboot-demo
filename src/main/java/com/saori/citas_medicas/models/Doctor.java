@@ -6,20 +6,35 @@
 package com.saori.citas_medicas.models;
 import jakarta.persistence.*;
 import java.util.List;
+
+import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Setter
+@Getter
 @Table(name = "doctores")
 public class Doctor extends Usuario {
-    private String Especialidad;
+    private String especialidad;
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HorarioDisponible> horariosDisponibles;
    //cascadetype all nos permite que cuando se elimine un doctor eliminemos todaas sus citas y horarios por ejemplo
    //mientras que orphanremoval nos dice que si eliminamos una cita de ese doctor, lo eliminemos correctamente de la bd, ya que si eliminamos a la cita de la lista aca en java, se elimina pero sigue huerfano en la base de datos
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cita> citas;
+    private List<Cita> citas; //aca decimos que el doctor tiene una lista de citas
 
+    public void añadirCita(Cita cita){
+        citas.add(cita);
+        cita.setDoctor(this); // Establece la relacion
+    }
+
+    @Override
+    public List<Cita> getCitasGuardadas() {
+        return citas;
+    }
+
+
+    
     
 }

@@ -4,6 +4,9 @@ import org.springframework.web.bind.annotation.*; // ✅ Importa todas las anota
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import com.saori.citas_medicas.services.CitaService;
 
@@ -32,7 +35,40 @@ public class CitaController {
         }
        catch(Exception e){
              e.printStackTrace();
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CitaResponseDTO("Error"+e));
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CitaResponseDTO("Error: "+e));
        }
     }
+
+    @GetMapping("/usuario/citas")
+public ResponseEntity<List<CitaResponseDTO>> obtenerCitasDelDoctor(@RequestHeader("Authorization") String token) {
+    try {
+        // Extraemos el token sin el prefijo "Bearer "
+        String jwtToken = token.replace("Bearer ", "");
+        List<CitaResponseDTO> citas = citaService.obtenerCitasUsuario(jwtToken);
+        return ResponseEntity.ok(citas);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+    }
+}
+//actualizar el estado de la cita
+@PostMapping("/actualizarEstado")
+public ResponseEntity<String> actualizarEstadoCita(
+        @RequestParam long id,
+        @RequestParam String nuevoEstado) {
+    try {
+        // Llamamos al servicio para actualizar el estado de la cita
+        Boolean actualizado = citaService.actualizarEstadoCita(id, nuevoEstado);
+
+        if (actualizado) {
+            return ResponseEntity.ok("El estado de la cita se actualizó correctamente.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No se pudo actualizar el estado de la cita.");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocurrió un error al actualizar el estado de la cita.");
+    }
+}
+
 }

@@ -18,12 +18,18 @@ public class JwtUtil {
     public String generateToken(Usuario usuario) {
         return Jwts.builder()
                 .setSubject(usuario.getEmail()) //  Usa el email como identificador
+                //agregamos el rol al token
+                .claim("role", usuario.getRol()) //  Agrega el rol al token
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas de expiración
                 .signWith(key, SignatureAlgorithm.HS256) // Usa `key` correctamente
                 .compact();
     }
-
+ 
+    //  Extraer el rol del token
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class)); //  Extrae el rol del token
+    }
     //  Validar un token JWT
     public boolean validateToken(String token, String username) {
         return extractUsername(token).equals(username) && !isTokenExpired(token);

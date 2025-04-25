@@ -17,6 +17,7 @@ public class CitaResponseDTO {
     private LocalDate fecha;
     private LocalTime hora;
     private String estado;
+    private String descripcion;
 
 
     public CitaResponseDTO(String mensaje) {

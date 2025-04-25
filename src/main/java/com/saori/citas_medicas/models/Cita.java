@@ -28,4 +28,7 @@ public class Cita {
 
     @Enumerated(EnumType.STRING)
     private EstadoCita estado;
+    
+    @Column(length = 500)
+    private String descripcion;
 }

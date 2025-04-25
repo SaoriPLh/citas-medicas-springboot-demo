@@ -12,4 +12,5 @@ public class CitaRequest {
     private Long pacienteId;
     private LocalDate fecha;
     private LocalTime hora;
+    private String descripcion;
 }
