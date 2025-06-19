@@ -11,8 +11,8 @@ import java.util.function.Function;
 
 @Service
 public class JwtUtil {
-    private static final String SECRET_KEY = "CHOLIJYM789CHOLIJYM789CHOLIJYM789"; // 🔑 Asegúrate de que la clave sea de al menos 32 caracteres
-    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes()); // ✅ Usa `Keys.hmacShaKeyFor()`
+    private static final String SECRET_KEY = "CHOLIJYM789CHOLIJYM789CHOLIJYM789"; 
+    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes()); 
 
     //  Generar un token JWT
     public String generateToken(Usuario usuario) {

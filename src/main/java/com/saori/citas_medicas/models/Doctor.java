@@ -1,40 +1,42 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package com.saori.citas_medicas.models;
-import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
-@Setter
-@Getter
 @Table(name = "doctores")
-public class Doctor extends Usuario {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Doctor {
+
+   @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id; // ID propio
+
+   @OneToOne(cascade = CascadeType.ALL)
+
+    @JoinColumn(name = "id")
+    private Usuario usuario;
+
     private String especialidad;
 
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HorarioDisponible> horariosDisponibles;
-   //cascadetype all nos permite que cuando se elimine un doctor eliminemos todaas sus citas y horarios por ejemplo
-   //mientras que orphanremoval nos dice que si eliminamos una cita de ese doctor, lo eliminemos correctamente de la bd, ya que si eliminamos a la cita de la lista aca en java, se elimina pero sigue huerfano en la base de datos
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cita> citas; //aca decimos que el doctor tiene una lista de citas
 
-    public void añadirCita(Cita cita){
-        citas.add(cita);
-        cita.setDoctor(this); // Establece la relacion
-    }
+   @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Cita> citasGuardadas = new ArrayList<>();
 
-    @Override
-    public List<Cita> getCitasGuardadas() {
-        return citas;
-    }
+@OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<HorarioDisponible> horariosDisponibles = new ArrayList<>();
 
 
-    
-    
+
+public void añadirCita(Cita cita) {
+    citasGuardadas.add(cita);
+    cita.setDoctor(this);
+}
+
+
 }

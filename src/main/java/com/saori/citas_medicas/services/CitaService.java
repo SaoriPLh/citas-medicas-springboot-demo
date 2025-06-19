@@ -2,235 +2,177 @@ package com.saori.citas_medicas.services;
 
 import com.saori.citas_medicas.dto.ActualizarCitaRequest;
 import com.saori.citas_medicas.dto.CitaRequest;
-
-import com.saori.citas_medicas.enums.EstadoCita;
-import com.saori.citas_medicas.models.Cita;
-import com.saori.citas_medicas.models.Doctor;
-import com.saori.citas_medicas.models.HorarioDisponible;
-import com.saori.citas_medicas.models.Paciente;
-import com.saori.citas_medicas.models.Usuario;
-import com.saori.citas_medicas.repositories.CitaRepository;
-import com.saori.citas_medicas.repositories.UsuarioRepository;
 import com.saori.citas_medicas.dto.CitaResponseDTO;
+import com.saori.citas_medicas.enums.EstadoCita;
+import com.saori.citas_medicas.enums.Rol;
+import com.saori.citas_medicas.models.*;
+import com.saori.citas_medicas.repositories.CitaRepository;
+import com.saori.citas_medicas.repositories.DoctorRepository;
+import com.saori.citas_medicas.repositories.PacienteRepository;
+import com.saori.citas_medicas.repositories.UsuarioRepository;
 import com.saori.citas_medicas.valitator.CitaValidador;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Optional;
 
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CitaService {
-   //Inyecciones de dependencia
 
     private final CitaRepository citaRepository;
-    private final CitaValidador citaValidator; 
-    private final UsuarioRepository usuarioRepository; // Para obtener el usuario desde el token
+    private final CitaValidador citaValidator;
+    private final UsuarioRepository usuarioRepository;
+    private final DoctorRepository doctorRepository;
+    private final PacienteRepository pacienteRepository;
 
     @Autowired
-    public CitaService(CitaRepository citaRepository, CitaValidador citaValidator, UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public CitaService(CitaRepository citaRepository, CitaValidador citaValidator, UsuarioRepository usuarioRepository, DoctorRepository doctorRepository, PacienteRepository pacienteRepository) {
+        this.doctorRepository = doctorRepository;
+        this.pacienteRepository = pacienteRepository;
         this.citaRepository = citaRepository;
         this.citaValidator = citaValidator;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional
-    //recibimos el formato de como debe ser una cita osea CitaRequest
     public CitaResponseDTO reservarCita(CitaRequest request) {
-        //validaciones de citaValidador validar que existen o disponibilidad 
         Doctor doctor = citaValidator.validarDoctor(request.getDoctorId());
         Paciente paciente = citaValidator.validarPaciente(request.getPacienteId());
         HorarioDisponible horario = citaValidator.validarHorarioDisponible(doctor, request.getFecha(), request.getHora());
 
-    
         horario.setOcupado(true);
-        
-        // Crear y guardar la cita
+
         Cita cita = new Cita();
-        cita.setPaciente(paciente);
+      
         cita.setFecha(request.getFecha());
         cita.setHora(request.getHora());
         cita.setEstado(EstadoCita.PENDIENTE);
         cita.setDescripcion(request.getDescripcion());
-        cita = citaRepository.save(cita);
 
-        //guardamos esta cita creada en el doctor
         doctor.añadirCita(cita);
-        
+        paciente.añadirCita(cita);
+        cita = citaRepository.save(cita);
 
         return convertirCitaADTO(cita);
     }
 
-
-
-//Metodo que nos devuelva la lista de citas guardadas en el doctor pero cada una nos la va a devolver en un formato de CitaResponseDTO
 @Transactional(readOnly = true)
 public List<CitaResponseDTO> obtenerCitasUsuario(String token) {
-    //valiadamos el token y obtenemos el email del usuario
     String email = citaValidator.obtenerEmailDesdeToken(token);
     Usuario usuario = usuarioRepository.findByEmail(email)
-        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
- 
-        List<Cita> citas = usuario.getCitasGuardadas();
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        return citas.stream()
+    List<Cita> citas;
+
+    if (usuario.getRol() == Rol.DOCTOR) {
+        Doctor doctor = doctorRepository.findById(usuario.getId())
+                .orElseThrow(() -> new RuntimeException("Doctor no encontrado"));
+        citas = doctor.getCitasGuardadas();
+    } else if (usuario.getRol() == Rol.PACIENTE) {
+        Paciente paciente = pacienteRepository.findById(usuario.getId())
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+        citas = paciente.getCitasGuardadas();
+    } else {
+        throw new RuntimeException("Rol no reconocido.");
+    }
+
+    return citas.stream()
             .map(this::convertirCitaADTO)
             .toList();
 }
-    
 
-public Boolean actualizarEstadoCita(long id, String nuevoEstado) {
-    Optional<Cita> citaEncontrada = citaRepository.findById(id);
-    if (citaEncontrada.isEmpty()) return false; // Si no se encuentra la cita, devolvemos false
 
-    Cita cita = citaEncontrada.get();
-    EstadoCita estadoActual = cita.getEstado();
 
-    if (estadoActual == EstadoCita.PENDIENTE) {
-        if (EstadoCita.valueOf(nuevoEstado) == EstadoCita.CONFIRMADA || EstadoCita.valueOf(nuevoEstado) == EstadoCita.CANCELADA) {
-            cita.setEstado(EstadoCita.valueOf(nuevoEstado));
-            citaRepository.save(cita);
-            return true;
+
+    public Boolean actualizarEstadoCita(long id, String nuevoEstado) {
+
+        Optional<Cita> citaOpt = citaRepository.findById(id);
+
+        if (citaOpt.isEmpty()) return false;
+
+        Cita cita = citaOpt.get();
+        EstadoCita estadoActual = cita.getEstado();
+        EstadoCita nuevo = EstadoCita.valueOf(nuevoEstado);
+
+        if (estadoActual == EstadoCita.PENDIENTE && (nuevo == EstadoCita.CONFIRMADA || nuevo == EstadoCita.CANCELADA)) {
+            cita.setEstado(nuevo);
+        } else if (estadoActual == EstadoCita.CONFIRMADA && nuevo == EstadoCita.CANCELADA) {
+            cita.setEstado(nuevo);
         } else {
-            throw new IllegalArgumentException("Una cita pendiente solo puede aprobarse o rechazarse.");
+            throw new IllegalStateException("Cambio de estado no permitido desde: " + estadoActual);
         }
 
-    } else if (estadoActual == EstadoCita.CONFIRMADA) {
-        if (EstadoCita.valueOf(nuevoEstado) == EstadoCita.CANCELADA) {
-            cita.setEstado(EstadoCita.valueOf(nuevoEstado));
-            citaRepository.save(cita);
-            return true;
-        } else {
-            throw new IllegalArgumentException("Una cita aprobada solo puede cancelarse.");
-        }
-
-    } else {
-        throw new IllegalStateException("Una cita en estado " + estadoActual + " no puede modificarse.");
+        citaRepository.save(cita);
+        return true;
     }
-}
 
-    public CitaResponseDTO actualizarCita(Long id,ActualizarCitaRequest actualizarCitaRequest){
-        //recibitemos el tipo de cambio sregun el request
-        //validaremos q la cita exista
+    public CitaResponseDTO actualizarCita(Long id, ActualizarCitaRequest req) {
+        Cita cita = citaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
 
-        Optional<Cita> citaBuscada = citaRepository.findById(id);
+        CambioCItaStrategy estrategia = switch (req.getCambio()) {
+            case "DOCTOR" -> new CambioDoctorStrategy(citaValidator);
+            case "HORARIO" -> new CambioHorarioStrategy(citaValidator);
+            default -> throw new IllegalArgumentException("Cambio no soportado");
+        };
 
-        if(citaBuscada.isPresent()){
-            Cita cita = citaBuscada.get();
-
-            //nulo porque tendremos varias opciones a implementar
-            //no lo pasamos como parametro ya q necesitamos el actualizarcitaRequest
-            CambioCItaStrategy estrategia = null;
-            if("DOCTOR".equals(actualizarCitaRequest.getCambio())){
-                //si el tipo de cambio es doctor
-                estrategia = new CambioDoctorStrategy(citaValidator);}
-
-                
-            else if("HORARIO".equals(actualizarCitaRequest.getCambio())){
-                //si el tipo de cambio es horario
-                estrategia = new CambioHorarioStrategy(citaValidator);
-            }else{
-                throw new IllegalArgumentException("Tipo de cambio no soportado");
-            }
-
-
-        // Ejecutamos el cambio utilizando la estrategia seleccionada
-        estrategia.ejecutarCambio(cita, actualizarCitaRequest);
-
-        // Devolvemos la cita actualizada en el formato adecuado
+        estrategia.ejecutarCambio(cita, req);
         return convertirCitaADTO(cita);
-    } else {
-        // Si no encontramos la cita, devolvemos null (o puedes manejarlo de otra forma)
-        return null;
     }
+
+  @Transactional
+public Boolean cancelarCita(long id) {
+    Cita cita = citaRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+
+    if (cita.getEstado() == EstadoCita.CANCELADA) {
+        return false; 
+    }
+
+    HorarioDisponible horario = citaValidator.validarHorarioDisponible(
+            cita.getDoctor(), cita.getFecha(), cita.getHora());
+
+    horario.setOcupado(false);
+    cita.setEstado(EstadoCita.CANCELADA);
+
+    citaRepository.save(cita); 
+    return true;
 }
 
-    //eliminar una cita, devolveremos un boolean? 
 
-    @Transactional
-    public Boolean cancelarCita(long id){
-        //Primero buscamos la cita a traves de optional para manejar erores mejor
-        Optional<Cita> citaEncontrada = citaRepository.findById(id);
+    public Boolean cambiarEstadoCita(long id, EstadoCita nuevoEstado) {
+        Optional<Cita> citaOpt = citaRepository.findById(id);
+        if (citaOpt.isEmpty()) return false;
 
-        //si la cita existe debemos cancelar la cita, es decir, dejar los horarios y tod lobre, es como borrar la cita xd
-        if(citaEncontrada.isPresent()){
-
-            Cita cita = citaEncontrada.get();
-            
-            //h
-            HorarioDisponible horario = citaValidator.validarHorarioDisponible(cita.getDoctor(), cita.getFecha(), cita.getHora());
-            
-            horario.setOcupado(false);
-            cita.setEstado(EstadoCita.CANCELADA);
-
-            citaRepository.deleteById(id);
-
-            return true;
-
-
-        }
-
-        return false;
-        }
-
-
-        
-
-
-        //metodo para cambiar el estado de la cita a cancelada pendiente o atendida
-        public Boolean cambiarEstadoCita(long id, EstadoCita nuevoEstado) {
-            Optional<Cita> citaEncontrada = citaRepository.findById(id);
-        
-            if (citaEncontrada.isPresent()) {
-                Cita cita = citaEncontrada.get();
-                 cita.setEstado(nuevoEstado);
-                        // Cambiar estado
-                 citaRepository.save(cita);             // Guardar en BD
-                 return true;                           // Confirmar éxito
-             }
-         
-             return false; // Si no se encontró la cita
-         
-        }
-
-        
-
-        
-
-        //verificar que exista la cita
-        //VERIFICAR QUE ESTE  PENDIENTE
-        //cambiar el estado de la cita como CONFIRMADA
-        //GUARDAR LA CITA ACTUALIZADA
-    
-    // Metodo para convertir cita en DTO
+        Cita cita = citaOpt.get();
+        cita.setEstado(nuevoEstado);
+        citaRepository.save(cita);
+        return true;
+    }
 
     private CitaResponseDTO convertirCitaADTO(Cita cita) {
-        CitaResponseDTO responseDTO = new CitaResponseDTO();
-        responseDTO.setId(cita.getId());
-        responseDTO.setFecha(cita.getFecha());
-        responseDTO.setHora(cita.getHora());
-        responseDTO.setEstado(cita.getEstado().toString());
-        responseDTO.setDescripcion(cita.getDescripcion());
+        CitaResponseDTO dto = new CitaResponseDTO();
+        dto.setId(cita.getId());
+        dto.setFecha(cita.getFecha());
+        dto.setHora(cita.getHora());
+        dto.setEstado(cita.getEstado().toString());
+        dto.setDescripcion(cita.getDescripcion());
+
+      dto.setDoctor(new CitaResponseDTO.DoctorDTO(
+    cita.getDoctor().getId(),
+    cita.getDoctor().getUsuario().getNombre(),
+    cita.getDoctor().getUsuario().getEmail()
+));
+
+dto.setPaciente(new CitaResponseDTO.PacienteDTO(
+    cita.getPaciente().getId(),
+    cita.getPaciente().getUsuario().getNombre(),
+    cita.getPaciente().getUsuario().getEmail()
+));
 
 
-        responseDTO.setDoctor(new CitaResponseDTO.DoctorDTO(
-                cita.getDoctor().getId(), 
-                cita.getDoctor().getNombre(), 
-                cita.getDoctor().getEmail()));
-
-        responseDTO.setPaciente(new CitaResponseDTO.PacienteDTO(
-                cita.getPaciente().getId(), 
-                cita.getPaciente().getNombre(), 
-                cita.getPaciente().getEmail()));
-
-        return responseDTO;
+        return dto;
     }
-    
 }

@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class CitasMedicasApplication {
 
 	public static void main(String[] args) {
-		System.out.println("¡La app arrancó!");
+		System.out.println("App viva");
 		SpringApplication.run(CitasMedicasApplication.class, args);
 	}
 

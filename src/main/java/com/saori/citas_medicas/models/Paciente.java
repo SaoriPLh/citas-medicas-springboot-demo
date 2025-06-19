@@ -1,30 +1,35 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package com.saori.citas_medicas.models;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
-import lombok.Setter;
+import lombok.*;
+
 @Entity
-@Setter
 @Table(name = "pacientes")
-public class Paciente extends Usuario {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Paciente {
+
+   @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id; // ID propio
+
+ @OneToOne(cascade = CascadeType.ALL)
+
+    @JoinColumn(name = "usuario_id",  nullable = false, unique = true)
+    private Usuario usuario;
+
     private String telefono;
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cita> citas; //aca decimos que el doctor tiene una lista de citas
 
-    public void añadirCita(Cita cita){
-        citas.add(cita);
-        cita.setPaciente(this); // Establece la relacion
-    }
+       @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Cita>citasGuardadas = new ArrayList<>();
 
-    @Override
-    public List<Cita> getCitasGuardadas() {
-        return citas;
-    }
+public void añadirCita(Cita cita) {
+    citasGuardadas.add(cita);
+    cita.setPaciente(this);
+}
 
-    
 }

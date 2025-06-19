@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("📥 Petición a: " + path);
 
         if (path.startsWith("/auth") || path.equals("/ping")) {
-            System.out.println("🔓 Ruta pública, no se aplica filtro JWT.");
+            System.out.println(" Ruta pública, no se aplica filtro JWT.");
             chain.doFilter(request, response);
             return;
         }
@@ -45,15 +45,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String userEmail;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("❌ No se encontró Authorization o no es Bearer.");
+            System.out.println(" No se encontró Authorization o no es Bearer.");
             chain.doFilter(request, response);
             return;
         }
 
         jwt = authHeader.substring(7);
-        System.out.println("🔐 JWT recibido: " + jwt);
+        System.out.println(" JWT recibido: " + jwt);
         userEmail = jwtUtil.extractUsername(jwt);
-        System.out.println("📧 Usuario extraído del token: " + userEmail);
+        System.out.println(" Usuario extraído del token: " + userEmail);
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
-                System.out.println("❌ Token inválido para el usuario.");
+                System.out.println(" Token inválido para el usuario.");
             }
         }
 

@@ -51,6 +51,25 @@ public ResponseEntity<List<CitaResponseDTO>> obtenerCitasDelDoctor(@RequestHeade
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     }
 }
+
+//falta agregar notacion para solo rol de doctor puede cancelar la cita
+@PostMapping("cancelarCita")
+public ResponseEntity<?> cancelarCita(@RequestParam long id){
+    try {
+        boolean citaCancelada = citaService.cancelarCita(id);
+
+        if (!citaCancelada) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("La cita no se pudo cancelar.");
+        }
+
+        return ResponseEntity.ok("Cita cancelada correctamente");
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno al cancelar la cita.");
+    }
+}
+
 //actualizar el estado de la cita
 @PostMapping("/actualizarEstado")
 public ResponseEntity<String> actualizarEstadoCita(

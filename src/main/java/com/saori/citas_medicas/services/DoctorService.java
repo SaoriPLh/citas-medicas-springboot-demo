@@ -44,9 +44,9 @@ public class DoctorService {
         .collect(Collectors.toList());
 
         return new DoctorDatosDTO(
-            doctor.getId(),
-            doctor.getNombre(),
-            doctor.getEmail(),
+            doctor.getUsuario().getId(),
+            doctor.getUsuario().getNombre(),
+            doctor.getUsuario().getEmail(),
             doctor.getEspecialidad(),
             horariosDTO
         );
