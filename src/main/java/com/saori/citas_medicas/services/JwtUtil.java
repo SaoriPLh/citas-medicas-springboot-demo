@@ -8,12 +8,14 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
-
+import org.springframework.beans.factory.annotation.Value;
 @Service
 public class JwtUtil {
-    private static final String SECRET_KEY = "CHOLIJYM789CHOLIJYM789CHOLIJYM789"; 
-    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes()); 
+   private final Key key;
 
+    public JwtUtil(@Value("${JWT_SECRET}") String secretKey) {
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
     //  Generar un token JWT
     public String generateToken(Usuario usuario) {
         return Jwts.builder()
