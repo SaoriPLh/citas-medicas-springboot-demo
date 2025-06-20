@@ -17,6 +17,7 @@ Este proyecto es un backend para una aplicación de citas médicas. Está constr
 - Gestión de citas médicas (crear, confirmar, cancelar, actualizar).
 - Validaciones de horario, disponibilidad de médicos y reglas de negocio.
 - Patrón Strategy para cambios de cita flexibles.
+- hashing de contraseñas con BCcrypt
 
 
 ---
